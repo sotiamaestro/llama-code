@@ -50,25 +50,9 @@ cargo build --release
 
 ## Demo
 
-<!-- TODO: Replace with actual asciinema or VHS recording -->
-```
-$ llama-code
-🦙 Llama Code v0.1.0 | llama3.1:8b | ctx: 0/32k
+![Llama Code Demo](docs/demo.gif)
 
-> Fix the off-by-one error in src/parser.rs
-
-Planning...
-  1. Read src/parser.rs to find the parsing logic
-  2. Identify the off-by-one boundary condition
-  3. Apply minimal fix
-
-📄 file_read src/parser.rs (lines 42-68)
-✏️  file_edit src/parser.rs
-   - for i in 0..tokens.len() - 1 {
-   + for i in 0..tokens.len() {
-
-✅ Fixed. The loop was stopping one token early.
-```
+*Fix a fibonacci performance bug — Plan → Read → Edit with diff → Verify → Done in 2.8s*
 
 ---
 
