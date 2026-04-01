@@ -1,0 +1,35 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Llama Code local data
+.llama-code/logs/
+.llama-code/cache/
+
+# Model files (large binaries)
+*.gguf
+*.bin
+models/
+
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Node
+node_modules/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test artifacts
+tests/fixtures/sample_repo/.git/

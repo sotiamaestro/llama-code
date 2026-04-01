@@ -1,0 +1,85 @@
+[workspace]
+members = [
+    "crates/llama-code-core",
+    "crates/llama-code-tools",
+    "crates/llama-code-format",
+    "crates/llama-code-tui",
+    "crates/llama-code-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/llamacode/llama-code"
+description = "The first coding agent built natively for open-source models"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Logging (opt-in only)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+
+# Syntax highlighting
+syntect = "5"
+
+# Diff generation
+similar = { version = "2", features = ["inline"] }
+
+# Filesystem
+tempfile = "3"
+dirs = "6"
+walkdir = "2"
+ignore = "0.4"
+notify = "7"
+
+# Async utilities
+async-trait = "0.1"
+futures = "0.3"
+tokio-stream = "0.1"
+
+# UUID for sessions
+uuid = { version = "1", features = ["v4"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Regex
+regex = "1"
+
+# Byte size formatting
+bytesize = "1"
+
+# Internal crates
+llama-code-core = { path = "crates/llama-code-core" }
+llama-code-tools = { path = "crates/llama-code-tools" }
+llama-code-format = { path = "crates/llama-code-format" }
+llama-code-tui = { path = "crates/llama-code-tui" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

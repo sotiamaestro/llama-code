@@ -1,0 +1,27 @@
+[package]
+name = "llama-code-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Terminal user interface for Llama Code"
+
+[dependencies]
+tokio.workspace = true
+ratatui.workspace = true
+crossterm.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+futures.workspace = true
+tokio-stream.workspace = true
+syntect.workspace = true
+similar.workspace = true
+chrono.workspace = true
+unicode-width = "0.2"
+
+llama-code-core = { path = "../llama-code-core" }
+llama-code-tools = { path = "../llama-code-tools" }
+
+[dev-dependencies]

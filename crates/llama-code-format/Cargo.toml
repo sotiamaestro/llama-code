@@ -1,0 +1,15 @@
+[package]
+name = "llama-code-format"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Llama-native prompt formatting and constrained decoding for Llama Code"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
