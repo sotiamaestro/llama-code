@@ -1,4 +1,4 @@
-// Copyright 2025 Llama Code Contributors
+// Copyright 2026 Llama Code Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 //! Built-in tool implementations for Llama Code.
