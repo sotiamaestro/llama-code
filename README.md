@@ -8,6 +8,8 @@ Llama Code is a terminal-based AI coding agent that runs entirely on your machin
 [![CI](https://img.shields.io/github/actions/workflow/status/sotiamaestro/llama-code/ci.yml?branch=main&label=CI)](https://github.com/sotiamaestro/llama-code/actions)
 [![Tests](https://img.shields.io/badge/tests-84%20passing-brightgreen.svg)]()
 
+> **Status:** v0.1.0. This is an early release. The core agent loop, tools, and TUI work. Model compatibility is broad (anything on Ollama) but we haven't published formal benchmarks yet. Expect rough edges. Contributions and testing reports welcome.
+
 ---
 
 ## Why Llama Code?
@@ -48,7 +50,9 @@ cargo build --release
 
 ---
 
-## Demo
+## Example Session
+
+Here's what a typical interaction looks like:
 
 ![Llama Code Demo](docs/demo.gif)
 
@@ -56,22 +60,21 @@ cargo build --release
 
 ---
 
-## Supported Models
+## Models
 
-Llama Code works with any model available through Ollama. These are tested and recommended:
+Llama Code works with any model available through Ollama. Since it communicates through Ollama's chat API, any model you can `ollama pull` should work.
 
-| Model | Size | VRAM | Best For | Quality |
-|-------|------|------|----------|---------|
-| `llama3.2:3b` | ~2 GB | 4 GB | Quick edits, file reads, simple tasks | ⭐⭐⭐ |
-| `llama3.1:8b` | ~4.7 GB | 8 GB | General coding, bug fixes, test writing | ⭐⭐⭐⭐ |
-| `llama3.1:70b-q4_K_M` | ~40 GB | 48 GB | Complex refactors, architecture, multi-file | ⭐⭐⭐⭐⭐ |
-| `codellama:13b` | ~7 GB | 10 GB | Code-focused tasks, completions | ⭐⭐⭐⭐ |
-| `deepseek-coder-v2:16b` | ~9 GB | 12 GB | Code generation, debugging | ⭐⭐⭐⭐ |
-| `qwen2.5-coder:7b` | ~4.4 GB | 8 GB | Code-focused alternative | ⭐⭐⭐⭐ |
+For coding agent tasks, models with strong instruction following and native tool calling tend to perform best. The community has had good results with:
 
-**Don't have a GPU?** Ollama runs on CPU too. Start with `llama3.2:3b` - it's fast even on a MacBook Air.
+- **Qwen3 Coder** (7B / 32B) for tool calling reliability
+- **Devstral** (24B) for code generation
+- **DeepSeek R1** for reasoning heavy tasks
+- **Llama 4 Scout** as a general purpose option
+- **Llama 3.1** (8B / 70B) as a well tested baseline
 
-**Model ladder:** Configure light/default/heavy models in `~/.config/llama-code/config.toml` and Llama Code auto-routes tasks to the right size.
+We haven't published benchmarks yet. If you test Llama Code with a specific model, open an issue with your results and we'll add it to the docs.
+
+**Minimum viable setup:** Any 7B+ instruct model through Ollama. Start with whatever you already have pulled.
 
 ---
 
@@ -124,9 +127,10 @@ Config lives at `~/.config/llama-code/config.toml`:
 
 ```toml
 [model]
-default = "llama3.1:8b-instruct-q4_K_M"
-heavy = "llama3.1:70b-instruct-q4_K_M"    # optional
-light = "llama3.2:3b-instruct-q4_K_M"     # optional
+# These are defaults. Replace with whatever models you have in Ollama.
+default = "qwen3-coder:7b"
+heavy = "qwen3-coder:32b"        # optional
+light = "llama3.2:3b"            # optional
 
 [model.ollama]
 host = "http://127.0.0.1:11434"
