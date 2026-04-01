@@ -100,16 +100,12 @@ fn try_parse(json_str: &str) -> Option<ParsedToolCall> {
 fn fix_single_quotes(input: &str) -> String {
     // Simple replacement - works for most cases
     // A more robust implementation would track string context
-    static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"'([^']*)'(\s*[,:\}\]])").unwrap()
-    });
+    static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"'([^']*)'(\s*[,:\}\]])").unwrap());
     RE.replace_all(input, r#""$1"$2"#).to_string()
 }
 
 fn remove_trailing_commas(input: &str) -> String {
-    static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r",\s*([}\]])").unwrap()
-    });
+    static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r",\s*([}\]])").unwrap());
     RE.replace_all(input, "$1").to_string()
 }
 

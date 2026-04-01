@@ -46,10 +46,7 @@ impl Tool for LsTool {
     }
 
     async fn execute(&self, params: serde_json::Value, ctx: &ToolContext) -> ToolResult {
-        let path = params
-            .get("path")
-            .and_then(|v| v.as_str())
-            .unwrap_or(".");
+        let path = params.get("path").and_then(|v| v.as_str()).unwrap_or(".");
 
         let depth = params
             .get("depth")
@@ -177,9 +174,7 @@ mod tests {
         let tool = LsTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 
-        let result = tool
-            .execute(serde_json::json!({}), &ctx)
-            .await;
+        let result = tool.execute(serde_json::json!({}), &ctx).await;
 
         assert!(result.is_success());
         assert!(result.content.contains("file1.rs"));

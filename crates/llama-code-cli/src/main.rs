@@ -156,15 +156,9 @@ async fn run_setup(config: &Config) -> anyhow::Result<()> {
             let default_config = Config::default();
             let toml_str = toml::to_string_pretty(&default_config)?;
             std::fs::write(&config_path, toml_str)?;
-            println!(
-                "✓ Config created at {}",
-                config_path.display()
-            );
+            println!("✓ Config created at {}", config_path.display());
         } else {
-            println!(
-                "✓ Config exists at {}",
-                config_path.display()
-            );
+            println!("✓ Config exists at {}", config_path.display());
         }
     }
 

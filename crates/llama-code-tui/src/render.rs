@@ -45,25 +45,25 @@ fn render_line(text: &str) -> Line<'static> {
     }
 
     // Headers
-    if text.starts_with("### ") {
+    if let Some(stripped) = text.strip_prefix("### ") {
         return Line::from(Span::styled(
-            text[4..].to_string(),
+            stripped.to_string(),
             Style::default()
                 .fg(Color::White)
                 .add_modifier(ratatui::style::Modifier::BOLD),
         ));
     }
-    if text.starts_with("## ") {
+    if let Some(stripped) = text.strip_prefix("## ") {
         return Line::from(Span::styled(
-            text[3..].to_string(),
+            stripped.to_string(),
             Style::default()
                 .fg(Color::White)
                 .add_modifier(ratatui::style::Modifier::BOLD),
         ));
     }
-    if text.starts_with("# ") {
+    if let Some(stripped) = text.strip_prefix("# ") {
         return Line::from(Span::styled(
-            text[2..].to_string(),
+            stripped.to_string(),
             Style::default()
                 .fg(Color::White)
                 .add_modifier(ratatui::style::Modifier::BOLD),
@@ -95,11 +95,7 @@ fn render_line(text: &str) -> Line<'static> {
 }
 
 /// Format a status bar string.
-pub fn format_status_bar(
-    version: &str,
-    model: &str,
-    context_usage: &str,
-) -> String {
+pub fn format_status_bar(version: &str, model: &str, context_usage: &str) -> String {
     format!(" 🦙 Llama Code {version} | model: {model} | ctx: {context_usage} ")
 }
 

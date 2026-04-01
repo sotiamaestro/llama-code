@@ -5,7 +5,7 @@
 //!
 //! Three tiers: Auto-Approve, Confirm Once, Always Confirm.
 
-use llama_code_tools::{ToolCall, bash::BashTool, git::GitTool};
+use llama_code_tools::{bash::BashTool, git::GitTool, ToolCall};
 use std::collections::HashSet;
 use std::sync::Mutex;
 
@@ -51,9 +51,7 @@ impl PermissionManager {
 
                 if BashTool::is_always_dangerous(command) {
                     Permission::AlwaysConfirm
-                } else if BashTool::is_allowlisted(command) {
-                    Permission::AutoApprove
-                } else if self.yolo_mode {
+                } else if BashTool::is_allowlisted(command) || self.yolo_mode {
                     Permission::AutoApprove
                 } else {
                     Permission::ConfirmOnce
@@ -70,9 +68,7 @@ impl PermissionManager {
 
                 if GitTool::always_requires_confirmation(subcommand) {
                     Permission::AlwaysConfirm
-                } else if GitTool::is_read_only(subcommand) {
-                    Permission::AutoApprove
-                } else if self.yolo_mode {
+                } else if GitTool::is_read_only(subcommand) || self.yolo_mode {
                     Permission::AutoApprove
                 } else {
                     Permission::ConfirmOnce
@@ -162,7 +158,10 @@ mod tests {
     #[test]
     fn test_confirm_once_file_write() {
         let pm = PermissionManager::new(false);
-        let call = make_call("file_write", serde_json::json!({"path": "test.rs", "content": ""}));
+        let call = make_call(
+            "file_write",
+            serde_json::json!({"path": "test.rs", "content": ""}),
+        );
         assert_eq!(pm.classify(&call), Permission::ConfirmOnce);
         assert!(!pm.is_approved(&call));
 
@@ -173,7 +172,10 @@ mod tests {
     #[test]
     fn test_yolo_mode_approves_writes() {
         let pm = PermissionManager::new(true);
-        let call = make_call("file_write", serde_json::json!({"path": "test.rs", "content": ""}));
+        let call = make_call(
+            "file_write",
+            serde_json::json!({"path": "test.rs", "content": ""}),
+        );
         assert_eq!(pm.classify(&call), Permission::AutoApprove);
     }
 

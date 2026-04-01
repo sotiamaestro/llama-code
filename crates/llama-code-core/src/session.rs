@@ -91,10 +91,7 @@ mod tests {
 
     #[test]
     fn test_new_session() {
-        let session = Session::new(
-            PathBuf::from("/tmp/test"),
-            "llama3.1:8b".to_string(),
-        );
+        let session = Session::new(PathBuf::from("/tmp/test"), "llama3.1:8b".to_string());
         assert!(!session.id.is_empty());
         assert_eq!(session.model, "llama3.1:8b");
         assert!(session.history.is_empty());
@@ -103,10 +100,7 @@ mod tests {
 
     #[test]
     fn test_session_metadata() {
-        let session = Session::new(
-            PathBuf::from("/tmp/test"),
-            "llama3.1:8b".to_string(),
-        );
+        let session = Session::new(PathBuf::from("/tmp/test"), "llama3.1:8b".to_string());
         let meta = session.metadata();
         assert_eq!(meta.id, session.id);
         assert_eq!(meta.model, "llama3.1:8b");

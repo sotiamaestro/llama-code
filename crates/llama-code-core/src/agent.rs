@@ -167,7 +167,9 @@ impl Agent {
             self.events.emit(AgentEvent::GenerationComplete);
 
             // Wait for completion and get stats
-            let stats = handle.await.map_err(|e| LlamaError::Other(e.to_string()))??;
+            let stats = handle
+                .await
+                .map_err(|e| LlamaError::Other(e.to_string()))??;
             self.session
                 .add_tokens(stats.prompt_tokens + stats.completion_tokens);
 
@@ -201,13 +203,13 @@ impl Agent {
 
                 // Check permissions
                 let permission = self.permissions.classify(&tool_call);
-                if permission == Permission::AlwaysConfirm || permission == Permission::ConfirmOnce
+                if (permission == Permission::AlwaysConfirm
+                    || permission == Permission::ConfirmOnce)
+                    && !self.permissions.is_approved(&tool_call)
                 {
-                    if !self.permissions.is_approved(&tool_call) {
-                        // In the agent loop, we emit an event but auto-approve for now
-                        // The TUI layer handles the actual user interaction
-                        self.permissions.approve_for_session(&tool_call);
-                    }
+                    // In the agent loop, we emit an event but auto-approve for now
+                    // The TUI layer handles the actual user interaction
+                    self.permissions.approve_for_session(&tool_call);
                 }
 
                 self.events.emit(AgentEvent::ToolExecutionStarted {
@@ -237,8 +239,7 @@ impl Agent {
                 });
                 accumulated_response.push_str(&response_text);
                 accumulated_response.push('\n');
-                accumulated_response
-                    .push_str(&format!("[Tool result: {}]", tool_result_json));
+                accumulated_response.push_str(&format!("[Tool result: {}]", tool_result_json));
             }
 
             // Check if context needs compaction

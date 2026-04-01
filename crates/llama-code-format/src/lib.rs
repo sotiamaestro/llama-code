@@ -57,11 +57,7 @@ pub enum Phase {
 /// Trait for prompt formatters.
 pub trait PromptFormatter: Send + Sync {
     /// Format a full conversation into a prompt string.
-    fn format_prompt(
-        &self,
-        messages: &[ChatMessage],
-        tools: &[ToolDefinition],
-    ) -> String;
+    fn format_prompt(&self, messages: &[ChatMessage], tools: &[ToolDefinition]) -> String;
 
     /// Format a tool result to feed back to the model.
     fn format_tool_result(&self, result: &str) -> String;

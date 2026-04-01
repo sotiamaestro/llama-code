@@ -137,7 +137,9 @@ impl OllamaClient {
     /// Check if a specific model is available.
     pub async fn has_model(&self, model_name: &str) -> Result<bool> {
         let models = self.list_models().await?;
-        Ok(models.iter().any(|m| m.name == model_name || m.name.starts_with(&format!("{model_name}:"))))
+        Ok(models
+            .iter()
+            .any(|m| m.name == model_name || m.name.starts_with(&format!("{model_name}:"))))
     }
 
     /// Send a chat completion request with streaming.
@@ -148,7 +150,10 @@ impl OllamaClient {
         messages: Vec<OllamaMessage>,
         params: &ModelParameters,
         stop_tokens: Vec<String>,
-    ) -> Result<(mpsc::Receiver<String>, tokio::task::JoinHandle<Result<GenerationStats>>)> {
+    ) -> Result<(
+        mpsc::Receiver<String>,
+        tokio::task::JoinHandle<Result<GenerationStats>>,
+    )> {
         let (tx, rx) = mpsc::channel(256);
 
         let request = ChatRequest {

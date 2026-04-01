@@ -2,17 +2,26 @@
 
 **The first coding agent built natively for open-source models.**
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
+Llama Code is a terminal-based AI coding agent that runs entirely on your machine. No API keys, no cloud, no telemetry. Just you, your code, and a local Llama model.
 
-<!-- Demo GIF placeholder -->
-<!-- ![Llama Code Demo](docs/demo.gif) -->
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/sotiamaestro/llama-code/ci.yml?branch=main&label=CI)](https://github.com/sotiamaestro/llama-code/actions)
+[![Tests](https://img.shields.io/badge/tests-84%20passing-brightgreen.svg)]()
+
+---
 
 ## Why Llama Code?
 
-- **🔓 Fully open source** — Apache 2.0 licensed, end to end. No proprietary dependencies anywhere in the stack.
-- **📡 Works offline** — Runs entirely on your machine. No cloud APIs, no accounts, no data leaves your computer.
-- **🦙 Llama-native** — Prompt templates, tool calling, and constrained decoding built specifically for Llama's architecture.
+Most AI coding tools are wrappers around proprietary APIs. They send your code to someone else's server, charge per token, and stop working when the internet goes down.
+
+Llama Code is different:
+
+- **Fully local.** Runs on Ollama. Your code never leaves your machine.
+- **Llama-native.** Prompt templates, tool calling format, and context management are purpose-built for Llama 3.x - not adapted from a Claude/GPT harness.
+- **Model ladder.** Automatically routes simple tasks to small models (3B) and complex reasoning to large models (70B). All local, all configurable.
+- **Zero config.** Install, pull a model, run. That's it.
+
+---
 
 ## Quick Start
 
@@ -20,7 +29,7 @@
 # Install
 cargo install llama-code
 
-# Setup (installs Ollama + pulls default model)
+# Setup (installs Ollama + pulls default model if needed)
 llama-code setup
 
 # Run in any project directory
@@ -28,49 +37,111 @@ cd your-project
 llama-code
 ```
 
+Or build from source:
+
+```bash
+git clone https://github.com/sotiamaestro/llama-code.git
+cd llama-code
+cargo build --release
+./target/release/llama-code
+```
+
+---
+
+## Demo
+
+<!-- TODO: Replace with actual asciinema or VHS recording -->
+```
+$ llama-code
+🦙 Llama Code v0.1.0 | llama3.1:8b | ctx: 0/32k
+
+> Fix the off-by-one error in src/parser.rs
+
+Planning...
+  1. Read src/parser.rs to find the parsing logic
+  2. Identify the off-by-one boundary condition
+  3. Apply minimal fix
+
+📄 file_read src/parser.rs (lines 42-68)
+✏️  file_edit src/parser.rs
+   - for i in 0..tokens.len() - 1 {
+   + for i in 0..tokens.len() {
+
+✅ Fixed. The loop was stopping one token early.
+```
+
+---
+
 ## Supported Models
 
-| Model | Size | Quality | Speed | Use Case |
-|-------|------|---------|-------|----------|
-| `llama3.2:3b-instruct` | 3B | ⭐⭐ | ⚡⚡⚡ | Quick reads, simple edits |
-| `llama3.1:8b-instruct-q4_K_M` | 8B | ⭐⭐⭐ | ⚡⚡ | **Default** — general tasks |
-| `llama3.1:70b-instruct-q4_K_M` | 70B | ⭐⭐⭐⭐ | ⚡ | Complex refactoring |
+Llama Code works with any model available through Ollama. These are tested and recommended:
 
-Any Ollama-compatible model works. The above are tested and recommended.
+| Model | Size | VRAM | Best For | Quality |
+|-------|------|------|----------|---------|
+| `llama3.2:3b` | ~2 GB | 4 GB | Quick edits, file reads, simple tasks | ⭐⭐⭐ |
+| `llama3.1:8b` | ~4.7 GB | 8 GB | General coding, bug fixes, test writing | ⭐⭐⭐⭐ |
+| `llama3.1:70b-q4_K_M` | ~40 GB | 48 GB | Complex refactors, architecture, multi-file | ⭐⭐⭐⭐⭐ |
+| `codellama:13b` | ~7 GB | 10 GB | Code-focused tasks, completions | ⭐⭐⭐⭐ |
+| `deepseek-coder-v2:16b` | ~9 GB | 12 GB | Code generation, debugging | ⭐⭐⭐⭐ |
+| `qwen2.5-coder:7b` | ~4.4 GB | 8 GB | Code-focused alternative | ⭐⭐⭐⭐ |
+
+**Don't have a GPU?** Ollama runs on CPU too. Start with `llama3.2:3b` - it's fast even on a MacBook Air.
+
+**Model ladder:** Configure light/default/heavy models in `~/.config/llama-code/config.toml` and Llama Code auto-routes tasks to the right size.
+
+---
+
+## Tools
+
+Llama Code ships with 8 built-in tools:
+
+| Tool | Description |
+|------|-------------|
+| `file_read` | Read files with smart truncation and line ranges |
+| `file_write` | Create/overwrite files with diff preview |
+| `file_edit` | Surgical string replacement (like find-and-replace) |
+| `bash` | Execute shell commands with allowlist + timeout |
+| `grep` | Ripgrep-powered codebase search |
+| `ls` | Tree-style directory listing |
+| `git` | Git operations with read/write permission tiers |
+| `think` | Extended reasoning scratchpad |
+
+---
 
 ## Architecture
 
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  llama-code  │────▶│  llama-code  │────▶│  llama-code  │
-│     cli      │     │     tui      │     │     core     │
-│  (clap args) │     │  (ratatui)   │     │ (agent loop) │
-└──────────────┘     └──────────────┘     └──────┬───────┘
-                                                  │
-                                    ┌─────────────┼─────────────┐
-                                    │             │             │
-                              ┌─────▼─────┐ ┌────▼────┐ ┌──────▼──────┐
-                              │ llama-code│ │ llama-  │ │   Ollama    │
-                              │   tools   │ │ code-   │ │   (local)   │
-                              │(8 tools)  │ │ format  │ │             │
-                              └───────────┘ └─────────┘ └─────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  llama-code  │────▶│  llama-code  │────▶│   llama-code     │
+│    -cli      │     │    -tui      │     │     -core        │
+│  (entrypoint)│     │  (ratatui)   │     │  (agent loop)    │
+└──────────────┘     └──────────────┘     └────────┬─────────┘
+                                                   │
+                                          ┌────────┴─────────┐
+                                          │                  │
+                                   ┌──────▼──────┐   ┌──────▼───────┐
+                                   │ llama-code  │   │  llama-code  │
+                                   │   -tools    │   │   -format    │
+                                   │ (8 tools)   │   │(Llama prompts│
+                                   └─────────────┘   └──────────────┘
 ```
 
-**Crates:**
-- `llama-code-cli` — Binary entrypoint, argument parsing
-- `llama-code-tui` — Terminal UI with ratatui
-- `llama-code-core` — Agent loop, config, context management, Ollama client
-- `llama-code-tools` — 8 built-in tools (file_read, file_write, file_edit, bash, grep, ls, git, think)
-- `llama-code-format` — Llama 3.x prompt template, ChatML fallback, JSON repair
+**Agent loop:** Plan → Execute → Validate → repeat or respond.
+
+**Model ladder:** Light (3B) → Default (8B) → Heavy (70B) with automatic escalation on failure.
+
+**Permission system:** Three tiers (auto-approve, confirm-once, always-confirm) so the model can't `rm -rf` your project without asking.
+
+---
 
 ## Configuration
 
-Config file: `~/.config/llama-code/config.toml`
+Config lives at `~/.config/llama-code/config.toml`:
 
 ```toml
 [model]
 default = "llama3.1:8b-instruct-q4_K_M"
-heavy = "llama3.1:70b-instruct-q4_K_M"   # optional
+heavy = "llama3.1:70b-instruct-q4_K_M"    # optional
 light = "llama3.2:3b-instruct-q4_K_M"     # optional
 
 [model.ollama]
@@ -82,75 +153,74 @@ num_ctx = 32768
 num_predict = 4096
 
 [permissions]
-yolo = false           # skip confirmations
-max_iterations = 10    # max tool calls per turn
+yolo = false    # set true to skip most confirmations
 ```
 
-Environment variable overrides:
-- `LLAMA_CODE_OLLAMA_HOST` — Ollama server URL
-- `LLAMA_CODE_MODEL` — Default model name
-- `LLAMA_CODE_NUM_CTX` — Context window size
+---
 
 ## Slash Commands
 
 | Command | Description |
 |---------|-------------|
 | `/help` | Show available commands |
-| `/model [name]` | Switch model or show current |
+| `/model [name]` | Switch model mid-session |
 | `/compact` | Manually trigger history compaction |
 | `/clear` | Clear conversation history |
 | `/diff` | Show all file changes this session |
-| `/undo` | Revert the last file change |
+| `/undo` | Revert last file change |
 | `/cost` | Show estimated token usage |
 | `/config` | Open config in $EDITOR |
 | `/exit` | Exit Llama Code |
 
-## CLI Options
+---
 
-```
-llama-code [OPTIONS] [COMMAND]
+## Building From Source
 
-Commands:
-  setup    Run initial setup (install Ollama, pull model)
-  config   Show current configuration
+Requirements:
+- Rust 1.75+ (install via [rustup](https://rustup.rs/))
+- Ollama (install via [ollama.com](https://ollama.com/))
 
-Options:
-  -m, --model <MODEL>         Model to use
-  -C, --directory <DIR>       Working directory
-      --yolo                  Skip confirmations
-      --max-iterations <N>    Max iterations per turn (default: 10)
-      --debug                 Enable debug logging
-  -h, --help                  Print help
-  -V, --version               Print version
+```bash
+git clone https://github.com/sotiamaestro/llama-code.git
+cd llama-code
+cargo build --release
 ```
 
-## Built-in Tools
+Run tests:
 
-| Tool | Description |
-|------|-------------|
-| `file_read` | Read files with line numbers, smart truncation |
-| `file_write` | Create/overwrite files with diff preview |
-| `file_edit` | Surgical string replacement (str_replace) |
-| `bash` | Execute shell commands with allowlist/timeout |
-| `grep` | Ripgrep-powered codebase search |
-| `ls` | Tree-style directory listing |
-| `git` | Git operations with read/write permission tiers |
-| `think` | Extended reasoning scratchpad |
+```bash
+cargo test
+```
+
+---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+Areas where help is needed:
+- Integration tests with real Ollama models
+- Constrained decoding improvements for smaller models
+- Support for additional model families (Mistral, Phi, Gemma)
+- Performance profiling and optimization
+- Doc-tests and documentation
+- Packaging (Homebrew, AUR, Nix, etc.)
 
-Apache 2.0 — see [LICENSE](LICENSE).
+---
 
 ## Acknowledgments
 
-Inspired by the work of:
-- [Ollama](https://ollama.com) — Local model serving
-- [llama.cpp](https://github.com/ggerganov/llama.cpp) — Model inference
-- [Aider](https://github.com/paul-gauthier/aider) — AI coding assistant
-- [OpenCode](https://github.com/opencode-ai/opencode) — Terminal AI coding tool
-- [Claw Code](https://github.com/instructkr/claw-code) — Architecture inspiration
-- [Meta](https://ai.meta.com/llama/) — Llama models
+Llama Code stands on the shoulders of giants:
+
+- [Ollama](https://ollama.com/) - Local model serving
+- [Meta Llama](https://llama.meta.com/) - Open-source language models
+- [Claw Code](https://github.com/instructkr/claw-code) - Harness architecture inspiration
+- [Aider](https://github.com/paul-gauthier/aider) - Pioneering open-source coding agents
+- [OpenCode](https://github.com/opencode-ai/opencode) - Model-agnostic agent design
+- [ratatui](https://ratatui.rs/) - Terminal UI framework
+
+---
+
+## License
+
+Apache 2.0. See [LICENSE](LICENSE) for details.

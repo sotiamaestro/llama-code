@@ -9,7 +9,7 @@ use crate::config::ModelParameters;
 /// Rule of thumb: 1 token ~= 4 characters for English code.
 /// We overestimate slightly to leave headroom.
 pub fn estimate_tokens(text: &str) -> usize {
-    (text.len() + 3) / 4
+    text.len().div_ceil(4)
 }
 
 /// Context budget calculator.
@@ -116,7 +116,7 @@ mod tests {
         assert_eq!(estimate_tokens(""), 0);
         assert_eq!(estimate_tokens("a"), 1);
         assert_eq!(estimate_tokens("hello world"), 3); // 11 chars / 4 ≈ 3
-        // Code tends to have more special chars
+                                                       // Code tends to have more special chars
         assert!(estimate_tokens("fn main() { println!(\"hello\"); }") > 5);
     }
 

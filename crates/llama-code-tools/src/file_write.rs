@@ -61,9 +61,7 @@ impl Tool for FileWriteTool {
         // Create parent directories
         if let Some(parent) = resolved.parent() {
             if let Err(e) = fs::create_dir_all(parent) {
-                return ToolResult::error(format!(
-                    "Failed to create directories for {path}: {e}"
-                ));
+                return ToolResult::error(format!("Failed to create directories for {path}: {e}"));
             }
         }
 
@@ -136,7 +134,10 @@ mod tests {
 
         assert!(result.is_success());
         assert!(result.content.contains("Created"));
-        assert_eq!(fs::read_to_string(dir.path().join("new.txt")).unwrap(), "hello world\n");
+        assert_eq!(
+            fs::read_to_string(dir.path().join("new.txt")).unwrap(),
+            "hello world\n"
+        );
     }
 
     #[tokio::test]

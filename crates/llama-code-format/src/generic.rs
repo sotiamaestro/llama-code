@@ -32,11 +32,7 @@ impl Default for GenericFormatter {
 }
 
 impl PromptFormatter for GenericFormatter {
-    fn format_prompt(
-        &self,
-        messages: &[ChatMessage],
-        tools: &[ToolDefinition],
-    ) -> String {
+    fn format_prompt(&self, messages: &[ChatMessage], tools: &[ToolDefinition]) -> String {
         let mut prompt = String::with_capacity(8192);
 
         for msg in messages {
@@ -113,8 +109,7 @@ impl PromptFormatter for GenericFormatter {
                     if depth == 0 {
                         if let Some(s) = start {
                             let json_str = &trimmed[s..=i];
-                            if let Ok(value) = serde_json::from_str::<serde_json::Value>(json_str)
-                            {
+                            if let Ok(value) = serde_json::from_str::<serde_json::Value>(json_str) {
                                 if let Some(call) = extract_tool_call(&value) {
                                     calls.push(call);
                                 }

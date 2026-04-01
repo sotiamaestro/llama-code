@@ -95,28 +95,42 @@ impl ModelRouter {
 
         // Heavy: complex multi-file tasks, refactoring, architecture
         let heavy_keywords = [
-            "refactor", "redesign", "architect", "rewrite",
-            "across all files", "entire codebase", "multi-file",
-            "from scratch", "implement", "complex",
+            "refactor",
+            "redesign",
+            "architect",
+            "rewrite",
+            "across all files",
+            "entire codebase",
+            "multi-file",
+            "from scratch",
+            "implement",
+            "complex",
         ];
-        if heavy_keywords.iter().any(|kw| input_lower.contains(kw)) {
-            if self.available_tiers.contains(&ModelTier::Heavy) {
-                return ModelTier::Heavy;
-            }
+        if heavy_keywords.iter().any(|kw| input_lower.contains(kw))
+            && self.available_tiers.contains(&ModelTier::Heavy)
+        {
+            return ModelTier::Heavy;
         }
 
         // Light: simple reads, listings, quick lookups
         let light_keywords = [
-            "show me", "read", "list", "what's in",
-            "cat", "find", "grep", "search for",
-            "status", "diff", "log",
+            "show me",
+            "read",
+            "list",
+            "what's in",
+            "cat",
+            "find",
+            "grep",
+            "search for",
+            "status",
+            "diff",
+            "log",
         ];
         if light_keywords.iter().any(|kw| input_lower.contains(kw))
             && input_tokens < 50
+            && self.available_tiers.contains(&ModelTier::Light)
         {
-            if self.available_tiers.contains(&ModelTier::Light) {
-                return ModelTier::Light;
-            }
+            return ModelTier::Light;
         }
 
         // Default for everything else

@@ -55,21 +55,18 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Length(1),     // Status bar
-                    Constraint::Min(5),        // Messages
-                    Constraint::Length(3),      // Input
-                    Constraint::Length(1),      // Help bar
+                    Constraint::Length(1), // Status bar
+                    Constraint::Min(5),    // Messages
+                    Constraint::Length(3), // Input
+                    Constraint::Length(1), // Help bar
                 ])
                 .split(frame.area());
 
             // Status bar
-            let status = render::format_status_bar(
-                VERSION,
-                agent.current_model(),
-                &agent.context_usage(),
-            );
-            let status_widget = Paragraph::new(status)
-                .style(Style::default().bg(Color::DarkGray).fg(Color::White));
+            let status =
+                render::format_status_bar(VERSION, agent.current_model(), &agent.context_usage());
+            let status_widget =
+                Paragraph::new(status).style(Style::default().bg(Color::DarkGray).fg(Color::White));
             frame.render_widget(status_widget, chunks[0]);
 
             // Messages area
@@ -78,16 +75,12 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
                 let prefix = match msg.role.as_str() {
                     "user" => Span::styled(
                         "You: ",
-                        Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+                        Style::default()
+                            .fg(Color::White)
+                            .add_modifier(Modifier::BOLD),
                     ),
-                    "assistant" => Span::styled(
-                        "🦙 ",
-                        Style::default().fg(Color::Green),
-                    ),
-                    _ => Span::styled(
-                        "",
-                        Style::default().fg(Color::DarkGray),
-                    ),
+                    "assistant" => Span::styled("🦙 ", Style::default().fg(Color::Green)),
+                    _ => Span::styled("", Style::default().fg(Color::DarkGray)),
                 };
 
                 if !prefix.content.is_empty() {
@@ -107,7 +100,9 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
             } else if is_generating {
                 all_lines.push(Line::from(Span::styled(
                     "🦙 Thinking...",
-                    Style::default().fg(Color::Yellow).add_modifier(Modifier::ITALIC),
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::ITALIC),
                 )));
             }
 
@@ -175,7 +170,6 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
                                     });
 
                                     // Process with agent
-                                    is_generating = true;
                                     streaming_text.clear();
 
                                     match agent.process_turn(&msg).await {
@@ -245,11 +239,7 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn handle_command(
-    agent: &mut Agent,
-    messages: &mut Vec<DisplayMessage>,
-    cmd: SlashCommand,
-) {
+fn handle_command(agent: &mut Agent, messages: &mut Vec<DisplayMessage>, cmd: SlashCommand) {
     match cmd {
         SlashCommand::Help => {
             messages.push(DisplayMessage {

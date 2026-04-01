@@ -1,79 +1,89 @@
 # Contributing to Llama Code
 
-Thank you for your interest in contributing to Llama Code! This document provides guidelines for contributing.
+Thanks for your interest in contributing. Here's how to get started.
 
-## Getting Started
+## Development Setup
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/llama-code`
-3. Install Rust: https://rustup.rs/
-4. Install Ollama: https://ollama.com/download
-5. Run setup: `llama-code setup`
-6. Run tests: `cargo test`
-
-## Development
-
-### Building
+1. Install Rust 1.75+ via [rustup](https://rustup.rs/)
+2. Install Ollama via [ollama.com](https://ollama.com/)
+3. Pull a model: `ollama pull llama3.1:8b`
+4. Clone and build:
 
 ```bash
-cargo build           # Debug build
-cargo build --release # Release build
-```
-
-### Running Tests
-
-```bash
-cargo test                    # All unit tests (no Ollama required)
-cargo test --workspace        # All tests across all crates
-cargo test -p llama-code-tools # Tests for a specific crate
-```
-
-### Code Quality
-
-```bash
-cargo clippy --workspace      # Lint check
-cargo fmt --all               # Format code
+git clone https://github.com/sotiamaestro/llama-code.git
+cd llama-code
+cargo build
+cargo test
 ```
 
 ## Project Structure
 
-- `crates/llama-code-cli/` — CLI binary
-- `crates/llama-code-core/` — Core agent loop
-- `crates/llama-code-tools/` — Tool implementations
-- `crates/llama-code-format/` — Prompt formatting
-- `crates/llama-code-tui/` — Terminal UI
+```
+crates/
+  llama-code-cli/      # Binary entrypoint, argument parsing
+  llama-code-core/     # Agent loop, config, context management, model client
+  llama-code-format/   # Llama-native prompt formatting, tool call schemas
+  llama-code-tools/    # Built-in tool implementations
+  llama-code-tui/      # Terminal UI (ratatui)
+```
 
-## Security Rules
+## Making Changes
 
-**These are non-negotiable:**
+1. Fork the repo and create a feature branch from `main`
+2. Make your changes
+3. Add tests for new functionality
+4. Run `cargo test` and ensure all tests pass
+5. Run `cargo clippy` and fix any warnings
+6. Run `cargo fmt` to format code
+7. Open a PR against `main`
 
-- **NO** hardcoded API keys, tokens, or secrets anywhere
-- **NO** telemetry, analytics, or phone-home behavior
-- **NO** references to specific user paths or machine names
-- **NO** logging of user prompts or file contents by default
-- All paths must be relative or use environment variables
+## Code Style
 
-## Pull Request Process
+- Follow standard Rust conventions
+- Use `cargo fmt` for formatting
+- Use `cargo clippy` for linting
+- Write doc comments for public APIs
+- Prefer returning `Result` over panicking
+- No `unwrap()` in library code (use `?` or `expect()` with descriptive messages)
 
-1. Create a feature branch from `main`
-2. Write tests for new functionality
-3. Ensure `cargo test` passes
-4. Ensure `cargo clippy` has no warnings
-5. Update README if you've changed public-facing behavior
-6. Submit a PR with a clear description of changes
+## Security
 
-## Adding a New Tool
+- **Never commit API keys, tokens, or secrets**
+- **Never hardcode file paths** - use environment variables or platform defaults
+- **Never add telemetry or analytics** without explicit opt-in
+- **Never send data over the network** except to the local Ollama instance
+- Run the security audit in the README before submitting PRs
 
-1. Create `crates/llama-code-tools/src/your_tool.rs`
-2. Implement the `Tool` trait
-3. Register it in `crates/llama-code-tools/src/registry.rs`
-4. Add unit tests
-5. Update the tools table in README
+## Areas for Contribution
 
-## Code of Conduct
+### Good First Issues
+- Add doc-tests to public API functions
+- Improve error messages for common failure modes
+- Add more models to the "Supported Models" table with quality ratings
 
-Be respectful, be constructive, be kind. We're all here to build something useful.
+### Medium
+- Integration test suite that runs against real Ollama
+- Support for Mistral/Phi/Gemma prompt formats in `llama-code-format`
+- Improve JSON repair heuristics in `constrained.rs`
+- Session persistence (save/resume conversations)
+
+### Advanced
+- Constrained decoding via llama.cpp grammar sampling
+- Benchmark suite against SWE-bench Lite
+- npm wrapper (`npx llama-code`)
+- Homebrew formula
+
+## Reporting Issues
+
+Include:
+- OS and architecture
+- Rust version (`rustc --version`)
+- Ollama version (`ollama --version`)
+- Model being used
+- Steps to reproduce
+- Expected vs actual behavior
+- Relevant logs (with any personal info redacted)
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under Apache 2.0.
+By contributing, you agree that your contributions will be licensed under the Apache 2.0 License.

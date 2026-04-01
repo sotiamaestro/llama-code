@@ -12,8 +12,10 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/llamacode/llama-code"
-description = "The first coding agent built natively for open-source models"
+repository = "https://github.com/sotiamaestro/llama-code"
+description = "The first coding agent built natively for open-source LLMs"
+keywords = ["llama", "coding-agent", "ai", "cli", "ollama"]
+categories = ["command-line-utilities", "development-tools"]
 
 [workspace.dependencies]
 # Async runtime

@@ -103,7 +103,7 @@ impl Tool for FileReadTool {
             let numbered: Vec<String> = lines
                 .iter()
                 .enumerate()
-                .filter(|(i, _)| *i + 1 >= start && *i + 1 <= end)
+                .filter(|(i, _)| *i + 1 >= start && *i < end)
                 .map(|(i, line)| format!("{:>4} | {}", i + 1, line))
                 .collect();
 

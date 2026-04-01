@@ -9,8 +9,17 @@ use tokio::process::Command;
 
 /// Git subcommands that are read-only and auto-approved.
 const READ_SUBCOMMANDS: &[&str] = &[
-    "status", "diff", "log", "branch", "show", "remote", "tag",
-    "stash list", "describe", "rev-parse", "config",
+    "status",
+    "diff",
+    "log",
+    "branch",
+    "show",
+    "remote",
+    "tag",
+    "stash list",
+    "describe",
+    "rev-parse",
+    "config",
 ];
 
 /// Git subcommands that always require confirmation (even in --yolo).
@@ -28,9 +37,7 @@ impl GitTool {
 
     /// Check if a git subcommand always requires confirmation.
     pub fn always_requires_confirmation(subcommand: &str) -> bool {
-        ALWAYS_CONFIRM
-            .iter()
-            .any(|cmd| subcommand.starts_with(cmd))
+        ALWAYS_CONFIRM.iter().any(|cmd| subcommand.starts_with(cmd))
     }
 }
 

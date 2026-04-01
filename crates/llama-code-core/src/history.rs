@@ -132,7 +132,10 @@ impl History {
         }
 
         for exchange in &old_exchanges {
-            summary.push_str(&format!("- User asked: {}\n", truncate(&exchange.user_input, 100)));
+            summary.push_str(&format!(
+                "- User asked: {}\n",
+                truncate(&exchange.user_input, 100)
+            ));
             for tc in &exchange.tool_calls {
                 summary.push_str(&format!(
                     "  - Used {} ({})\n",

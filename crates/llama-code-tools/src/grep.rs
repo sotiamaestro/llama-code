@@ -54,10 +54,7 @@ impl Tool for GrepTool {
             None => return ToolResult::error("Missing required parameter: pattern"),
         };
 
-        let search_path = params
-            .get("path")
-            .and_then(|v| v.as_str())
-            .unwrap_or(".");
+        let search_path = params.get("path").and_then(|v| v.as_str()).unwrap_or(".");
 
         let max_results = params
             .get("max_results")
@@ -83,8 +80,7 @@ impl Tool for GrepTool {
                 } else {
                     let lines: Vec<&str> = output.lines().collect();
                     let total = lines.len();
-                    let display_lines: Vec<&str> =
-                        lines.into_iter().take(max_results).collect();
+                    let display_lines: Vec<&str> = lines.into_iter().take(max_results).collect();
                     let mut content = display_lines.join("\n");
                     if total > max_results {
                         content.push_str(&format!(
@@ -148,8 +144,7 @@ async fn run_grep_fallback(
     max_results: usize,
 ) -> Result<String, String> {
     let mut cmd = Command::new("grep");
-    cmd.arg("-rn")
-        .arg("--color=never");
+    cmd.arg("-rn").arg("--color=never");
 
     if let Some(glob) = include {
         cmd.arg("--include").arg(glob);

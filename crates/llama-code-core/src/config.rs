@@ -21,7 +21,7 @@ const DEFAULT_TEMPERATURE: f64 = 0.1;
 const DEFAULT_MAX_ITERATIONS: usize = 10;
 
 /// Top-level configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub model: ModelConfig,
@@ -92,7 +92,7 @@ pub struct PermissionsConfig {
 }
 
 /// Logging configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LoggingConfig {
     /// Enable debug logging (opt-in only).
     #[serde(default)]
@@ -103,23 +103,29 @@ pub struct LoggingConfig {
 }
 
 // Default value functions
-fn default_model() -> String { DEFAULT_MODEL.to_string() }
-fn default_ollama_host() -> String { DEFAULT_OLLAMA_HOST.to_string() }
-fn default_temperature() -> f64 { DEFAULT_TEMPERATURE }
-fn default_top_p() -> f64 { 0.95 }
-fn default_num_ctx() -> usize { DEFAULT_NUM_CTX }
-fn default_num_predict() -> usize { DEFAULT_NUM_PREDICT }
-fn default_repeat_penalty() -> f64 { 1.1 }
-fn default_max_iterations() -> usize { DEFAULT_MAX_ITERATIONS }
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            model: ModelConfig::default(),
-            permissions: PermissionsConfig::default(),
-            logging: LoggingConfig::default(),
-        }
-    }
+fn default_model() -> String {
+    DEFAULT_MODEL.to_string()
+}
+fn default_ollama_host() -> String {
+    DEFAULT_OLLAMA_HOST.to_string()
+}
+fn default_temperature() -> f64 {
+    DEFAULT_TEMPERATURE
+}
+fn default_top_p() -> f64 {
+    0.95
+}
+fn default_num_ctx() -> usize {
+    DEFAULT_NUM_CTX
+}
+fn default_num_predict() -> usize {
+    DEFAULT_NUM_PREDICT
+}
+fn default_repeat_penalty() -> f64 {
+    1.1
+}
+fn default_max_iterations() -> usize {
+    DEFAULT_MAX_ITERATIONS
 }
 
 impl Default for ModelConfig {
@@ -159,15 +165,6 @@ impl Default for PermissionsConfig {
         Self {
             yolo: false,
             max_iterations: default_max_iterations(),
-        }
-    }
-}
-
-impl Default for LoggingConfig {
-    fn default() -> Self {
-        Self {
-            debug: false,
-            log_dir: None,
         }
     }
 }

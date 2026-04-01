@@ -172,10 +172,8 @@ impl Tool for BashTool {
 
                 // Truncate very long output
                 if output.len() > 50_000 {
-                    let truncated_msg = format!(
-                        "\n\n... [output truncated, {} total bytes]",
-                        output.len()
-                    );
+                    let truncated_msg =
+                        format!("\n\n... [output truncated, {} total bytes]", output.len());
                     output.truncate(50_000);
                     output.push_str(&truncated_msg);
                 }
@@ -183,9 +181,7 @@ impl Tool for BashTool {
                 if exit_code == 0 {
                     ToolResult::success(format!("$ {command}\n{output}"))
                 } else {
-                    ToolResult::error(format!(
-                        "$ {command}\nExit code: {exit_code}\n{output}"
-                    ))
+                    ToolResult::error(format!("$ {command}\nExit code: {exit_code}\n{output}"))
                 }
             }
             Ok(Err(e)) => ToolResult::error(format!("Failed to execute command: {e}")),

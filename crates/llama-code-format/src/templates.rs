@@ -57,11 +57,7 @@ pub const SYSTEM_COMPACT: &str = r#"You are Llama Code. You are deep in a coding
 The user's latest request is below. Continue working from the current state."#;
 
 /// Build the full system prompt with runtime-specific information.
-pub fn build_system_prompt(
-    cwd: &str,
-    os: &str,
-    tool_names: &[&str],
-) -> String {
+pub fn build_system_prompt(cwd: &str, os: &str, tool_names: &[&str]) -> String {
     format!(
         "{SYSTEM_CORE}\n\n\
          Current working directory: {cwd}\n\
@@ -97,11 +93,7 @@ mod tests {
 
     #[test]
     fn test_build_system_prompt() {
-        let prompt = build_system_prompt(
-            "/project",
-            "macOS",
-            &["file_read", "file_write", "bash"],
-        );
+        let prompt = build_system_prompt("/project", "macOS", &["file_read", "file_write", "bash"]);
         assert!(prompt.contains("Llama Code"));
         assert!(prompt.contains("/project"));
         assert!(prompt.contains("macOS"));

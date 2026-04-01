@@ -45,9 +45,7 @@ impl Llama3Formatter {
 
     /// Format a single message with Llama 3.x header tokens.
     fn format_message(role: &str, content: &str) -> String {
-        format!(
-            "{START_HEADER}{role}{END_HEADER}\n\n{content}{EOT}"
-        )
+        format!("{START_HEADER}{role}{END_HEADER}\n\n{content}{EOT}")
     }
 }
 
@@ -58,11 +56,7 @@ impl Default for Llama3Formatter {
 }
 
 impl PromptFormatter for Llama3Formatter {
-    fn format_prompt(
-        &self,
-        messages: &[ChatMessage],
-        tools: &[ToolDefinition],
-    ) -> String {
+    fn format_prompt(&self, messages: &[ChatMessage], tools: &[ToolDefinition]) -> String {
         let mut prompt = String::with_capacity(8192);
         prompt.push_str(BEGIN_OF_TEXT);
 
@@ -78,8 +72,7 @@ impl PromptFormatter for Llama3Formatter {
                     if !tools.is_empty() {
                         prompt.push_str("Environment: ipython\n");
                         prompt.push_str("Tools: ");
-                        let tool_names: Vec<&str> =
-                            tools.iter().map(|t| t.name.as_str()).collect();
+                        let tool_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
                         prompt.push_str(&tool_names.join(", "));
                         prompt.push_str("\n\n");
                         prompt.push_str("Available tool definitions:\n");
@@ -166,10 +159,7 @@ impl PromptFormatter for Llama3Formatter {
     }
 
     fn stop_tokens(&self) -> Vec<String> {
-        vec![
-            EOT.to_string(),
-            END_OF_TEXT.to_string(),
-        ]
+        vec![EOT.to_string(), END_OF_TEXT.to_string()]
     }
 
     fn name(&self) -> &str {

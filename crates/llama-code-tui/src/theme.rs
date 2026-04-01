@@ -16,7 +16,9 @@ impl Theme {
 
     /// Color for user messages.
     pub fn user_message() -> Style {
-        Style::default().fg(Color::White).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(Color::White)
+            .add_modifier(Modifier::BOLD)
     }
 
     /// Color for assistant messages.
@@ -51,14 +53,14 @@ impl Theme {
 
     /// Color for the status bar.
     pub fn status_bar() -> Style {
-        Style::default()
-            .bg(Color::DarkGray)
-            .fg(Color::White)
+        Style::default().bg(Color::DarkGray).fg(Color::White)
     }
 
     /// Color for the input prompt.
     pub fn prompt() -> Style {
-        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(Color::Cyan)
+            .add_modifier(Modifier::BOLD)
     }
 
     /// Color for thinking/planning indicator.

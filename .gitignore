@@ -1,35 +1,37 @@
-# Environment & secrets
-.env
-.env.local
-.env.*.local
-
-# Llama Code local data
-.llama-code/logs/
-.llama-code/cache/
-
-# Model files (large binaries)
-*.gguf
-*.bin
-models/
-
-# Rust build artifacts
-target/
-**/*.rs.bk
-
-# Node
-node_modules/
+# Build artifacts
+/target/
 dist/
 
-# OS files
-.DS_Store
-Thumbs.db
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Models (never commit model files)
+models/
+*.gguf
+*.bin
+*.safetensors
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
 
-# Test artifacts
-tests/fixtures/sample_repo/.git/
+# OS
+.DS_Store
+Thumbs.db
+
+# Llama Code runtime
+.llama-code/logs/
+.llama-code/cache/
+.llama-code/sessions/
+
+# Node (if npm wrapper exists)
+node_modules/
+package-lock.json
+
+# Rust
+**/*.rs.bk

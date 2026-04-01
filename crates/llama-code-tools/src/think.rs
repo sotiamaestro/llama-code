@@ -46,10 +46,7 @@ impl Tool for ThinkTool {
 
         // Return the thought as content (for the model's context) but no display
         // The TUI will show a brief indicator like "🤔 Thinking..." instead
-        ToolResult::success_with_display(
-            thought.to_string(),
-            "🤔 Thinking...".to_string(),
-        )
+        ToolResult::success_with_display(thought.to_string(), "🤔 Thinking...".to_string())
     }
 }
 
