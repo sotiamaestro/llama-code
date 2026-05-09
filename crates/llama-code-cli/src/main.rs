@@ -12,7 +12,7 @@ use std::path::PathBuf;
 #[command(
     name = "llama-code",
     about = "🦙 The first coding agent built natively for open-source models",
-    version
+    version = env!("CARGO_PKG_VERSION")
 )]
 struct Cli {
     /// Model to use (overrides config)
