@@ -157,57 +157,53 @@ pub async fn run(mut agent: Agent) -> anyhow::Result<()> {
                     KeyEvent {
                         code: KeyCode::Enter,
                         ..
-                    } => {
-                        if !is_generating && !input_buffer.trim().is_empty() {
-                            let user_text = input_buffer.clone();
-                            input_buffer.clear();
+                    } if !is_generating && !input_buffer.trim().is_empty() => {
+                        let user_text = input_buffer.clone();
+                        input_buffer.clear();
 
-                            match input::parse_input(&user_text) {
-                                UserInput::Message(msg) => {
-                                    messages.push(DisplayMessage {
-                                        role: "user".to_string(),
-                                        content: msg.clone(),
-                                    });
+                        match input::parse_input(&user_text) {
+                            UserInput::Message(msg) => {
+                                messages.push(DisplayMessage {
+                                    role: "user".to_string(),
+                                    content: msg.clone(),
+                                });
 
-                                    // Process with agent
-                                    streaming_text.clear();
+                                // Process with agent
+                                streaming_text.clear();
 
-                                    match agent.process_turn(&msg).await {
-                                        Ok(response) => {
-                                            messages.push(DisplayMessage {
-                                                role: "assistant".to_string(),
-                                                content: response,
-                                            });
-                                        }
-                                        Err(e) => {
-                                            messages.push(DisplayMessage {
-                                                role: "system".to_string(),
-                                                content: format!("Error: {e}"),
-                                            });
-                                        }
+                                match agent.process_turn(&msg).await {
+                                    Ok(response) => {
+                                        messages.push(DisplayMessage {
+                                            role: "assistant".to_string(),
+                                            content: response,
+                                        });
                                     }
-                                    is_generating = false;
-                                }
-                                UserInput::Command(cmd) => {
-                                    handle_command(&mut agent, &mut messages, cmd);
-                                    if matches!(
-                                        input::parse_input(&user_text),
-                                        UserInput::Command(SlashCommand::Exit)
-                                    ) {
-                                        break;
+                                    Err(e) => {
+                                        messages.push(DisplayMessage {
+                                            role: "system".to_string(),
+                                            content: format!("Error: {e}"),
+                                        });
                                     }
                                 }
-                                UserInput::Empty => {}
+                                is_generating = false;
                             }
+                            UserInput::Command(cmd) => {
+                                handle_command(&mut agent, &mut messages, cmd);
+                                if matches!(
+                                    input::parse_input(&user_text),
+                                    UserInput::Command(SlashCommand::Exit)
+                                ) {
+                                    break;
+                                }
+                            }
+                            UserInput::Empty => {}
                         }
                     }
                     KeyEvent {
                         code: KeyCode::Char(c),
                         ..
-                    } => {
-                        if !is_generating {
-                            input_buffer.push(c);
-                        }
+                    } if !is_generating => {
+                        input_buffer.push(c);
                     }
                     KeyEvent {
                         code: KeyCode::Backspace,
