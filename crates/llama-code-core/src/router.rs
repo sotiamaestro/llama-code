@@ -24,7 +24,10 @@ impl std::fmt::Display for ModelTier {
     }
 }
 
-/// Model router that selects the appropriate model for a task.
+/// Routes user requests to light, default, or heavy models based on heuristics.
+///
+/// Built from [`ModelConfig`](crate::config::ModelConfig); optional `light` and
+/// `heavy` entries enable additional tiers.
 pub struct ModelRouter {
     config: ModelConfig,
     /// Available model tiers (based on what's configured).
@@ -47,7 +50,11 @@ impl ModelRouter {
         }
     }
 
-    /// Select the appropriate model for a user input.
+    /// Choose a model for the given user input.
+    ///
+    /// Returns the Ollama model tag and the [`ModelTier`] selected by keyword and
+    /// token-count heuristics. Falls back to the default tier when light/heavy
+    /// models are not configured.
     pub fn select_model(&self, user_input: &str) -> (String, ModelTier) {
         let tier = self.estimate_tier(user_input);
         let model = self.model_for_tier(tier);
@@ -71,7 +78,11 @@ impl ModelRouter {
         }
     }
 
-    /// Escalate to the next tier (for retry on failure).
+    /// Move to the next larger model tier after a failed or insufficient response.
+    ///
+    /// Progression is `Light` → `Default` → `Heavy`. Returns `None` when already
+    /// on the heavy tier or when the next tier is not configured in
+    /// [`ModelConfig`](crate::config::ModelConfig).
     pub fn escalate(&self, current_tier: ModelTier) -> Option<(String, ModelTier)> {
         let next_tier = match current_tier {
             ModelTier::Light => ModelTier::Default,
