@@ -208,9 +208,9 @@ impl Config {
     }
 
     /// Apply environment variable overrides.
-    pub fn apply_env_overrides(&mut self) {
+    pub fn apply_env_overrides(&mut self) -> Result<()> {
         if let Ok(host) = std::env::var("LLAMA_CODE_OLLAMA_HOST") {
-            self.model.ollama.host = host;
+            self.model.ollama.host = parse_ollama_host_override(&host)?;
         }
         if let Ok(model) = std::env::var("LLAMA_CODE_MODEL") {
             self.model.default = model;
@@ -220,6 +220,7 @@ impl Config {
                 self.model.parameters.num_ctx = n;
             }
         }
+        Ok(())
     }
 
     /// Get the Ollama base URL.
@@ -231,6 +232,53 @@ impl Config {
     pub fn config_dir() -> Option<PathBuf> {
         dirs::config_dir().map(|d| d.join("llama-code"))
     }
+}
+
+fn parse_ollama_host_override(raw: &str) -> Result<String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return Err(LlamaError::Config(
+            "LLAMA_CODE_OLLAMA_HOST must not be empty".into(),
+        ));
+    }
+
+    let candidate = if trimmed.starts_with("http://") || trimmed.starts_with("https://") {
+        trimmed.to_string()
+    } else if trimmed.contains("://") {
+        return Err(LlamaError::Config(format!(
+            "LLAMA_CODE_OLLAMA_HOST has an invalid URL scheme: {trimmed}"
+        )));
+    } else {
+        format!("http://{trimmed}")
+    };
+
+    let url = reqwest::Url::parse(&candidate).map_err(|e| {
+        LlamaError::Config(format!("LLAMA_CODE_OLLAMA_HOST is not a valid URL: {e}"))
+    })?;
+    let host = url.host_str().ok_or_else(|| {
+        LlamaError::Config(format!(
+            "LLAMA_CODE_OLLAMA_HOST is missing a host: {candidate}"
+        ))
+    })?;
+    if url.scheme() != "http" && url.scheme() != "https" {
+        return Err(LlamaError::Config(format!(
+            "LLAMA_CODE_OLLAMA_HOST must use http or https, got: {}",
+            url.scheme()
+        )));
+    }
+    if !is_plausible_ollama_host(host) {
+        return Err(LlamaError::Config(format!(
+            "LLAMA_CODE_OLLAMA_HOST has an invalid host: {host}"
+        )));
+    }
+
+    Ok(candidate)
+}
+
+fn is_plausible_ollama_host(host: &str) -> bool {
+    host == "localhost"
+        || host.parse::<std::net::IpAddr>().is_ok()
+        || host.contains('.')
 }
 
 #[cfg(test)]
@@ -280,5 +328,46 @@ default = "custom-model"
         assert_eq!(config.model.default, "custom-model");
         assert_eq!(config.model.parameters.num_ctx, DEFAULT_NUM_CTX); // default
         assert!(!config.permissions.yolo); // default
+    }
+
+    #[test]
+    fn parse_ollama_host_override_normalizes_host_without_scheme() {
+        let host = parse_ollama_host_override("localhost:11434").unwrap();
+        assert_eq!(host, "http://localhost:11434");
+    }
+
+    #[test]
+    fn parse_ollama_host_override_accepts_http_url() {
+        let host = parse_ollama_host_override("http://127.0.0.1:11434").unwrap();
+        assert_eq!(host, "http://127.0.0.1:11434");
+    }
+
+    #[test]
+    fn parse_ollama_host_override_rejects_empty() {
+        assert!(parse_ollama_host_override("").is_err());
+        assert!(parse_ollama_host_override("   ").is_err());
+    }
+
+    #[test]
+    fn parse_ollama_host_override_rejects_invalid_urls() {
+        assert!(parse_ollama_host_override("not-a-url").is_err());
+        assert!(parse_ollama_host_override("ftp://example.com").is_err());
+        assert!(parse_ollama_host_override("http://").is_err());
+    }
+
+    #[test]
+    fn apply_env_overrides_validates_ollama_host() {
+        let key = "LLAMA_CODE_OLLAMA_HOST";
+        let previous = std::env::var(key).ok();
+
+        std::env::set_var(key, "not-a-url");
+        let mut config = Config::default();
+        assert!(config.apply_env_overrides().is_err());
+
+        if let Some(value) = previous {
+            std::env::set_var(key, value);
+        } else {
+            std::env::remove_var(key);
+        }
     }
 }
