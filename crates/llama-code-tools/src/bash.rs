@@ -170,13 +170,7 @@ impl Tool for BashTool {
                     output = "(no output)".to_string();
                 }
 
-                // Truncate very long output
-                if output.len() > 50_000 {
-                    let truncated_msg =
-                        format!("\n\n... [output truncated, {} total bytes]", output.len());
-                    output.truncate(50_000);
-                    output.push_str(&truncated_msg);
-                }
+                truncate_long_output(&mut output, 50_000);
 
                 if exit_code == 0 {
                     ToolResult::success(format!("$ {command}\n{output}"))
@@ -210,6 +204,15 @@ async fn execute_command(
     Ok((stdout, stderr, exit_code))
 }
 
+fn truncate_long_output(output: &mut String, max_bytes: usize) {
+    if output.len() > max_bytes {
+        let total_bytes = output.len();
+        let truncated_msg = format!("\n\n... [output truncated, {total_bytes} total bytes]");
+        output.truncate(output.floor_char_boundary(max_bytes));
+        output.push_str(&truncated_msg);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -231,6 +234,14 @@ mod tests {
         assert!(BashTool::is_always_dangerous("sudo rm -rf /"));
         assert!(!BashTool::is_always_dangerous("rm file.txt"));
         assert!(!BashTool::is_always_dangerous("ls -la"));
+    }
+
+    #[test]
+    fn truncate_long_output_respects_utf8_boundaries() {
+        let mut output = "😀".repeat(20_000);
+        truncate_long_output(&mut output, 50_000);
+        assert!(std::str::from_utf8(output.as_bytes()).is_ok());
+        assert!(output.contains("output truncated"));
     }
 
     #[test]

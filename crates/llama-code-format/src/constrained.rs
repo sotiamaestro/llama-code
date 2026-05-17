@@ -152,9 +152,11 @@ fn extract_json_object(input: &str) -> Option<String> {
         }
     }
 
-    // If no matching close brace found, take everything from start
-    let end_idx = end.unwrap_or(input.len() - 1);
-    Some(input[start..=end_idx].to_string())
+    let slice = match end {
+        Some(end_idx) => &input[start..=end_idx],
+        None => &input[start..],
+    };
+    Some(slice.to_string())
 }
 
 #[cfg(test)]
@@ -208,5 +210,12 @@ mod tests {
         let msg = tool_call_error_message("{bad json", "unexpected character");
         assert!(msg.contains("malformed"));
         assert!(msg.contains("{bad json"));
+    }
+
+    #[test]
+    fn extract_json_object_handles_trailing_multibyte_char() {
+        let input = r#"{"name": "bash", "parameters": {"command": "ls"}}🎉"#;
+        let json = extract_json_object(input).expect("json object");
+        assert!(serde_json::from_str::<serde_json::Value>(&json).is_ok());
     }
 }

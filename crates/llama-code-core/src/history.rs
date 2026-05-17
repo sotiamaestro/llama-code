@@ -174,12 +174,13 @@ impl Default for History {
     }
 }
 
-/// Truncate a string to a maximum length, adding "..." if truncated.
+/// Truncate a string to a maximum byte length, adding "..." if truncated.
 fn truncate(s: &str, max_len: usize) -> String {
     if s.len() <= max_len {
         s.to_string()
     } else {
-        format!("{}...", &s[..max_len])
+        let end = s.floor_char_boundary(max_len);
+        format!("{}...", &s[..end])
     }
 }
 
@@ -237,5 +238,13 @@ mod tests {
         history.push(sample_exchange("test"));
         history.clear();
         assert!(history.is_empty());
+    }
+
+    #[test]
+    fn truncate_respects_utf8_boundaries() {
+        let emoji = "😀😀😀😀😀";
+        let truncated = truncate(emoji, 4);
+        assert!(truncated.ends_with("..."));
+        assert!(std::str::from_utf8(truncated.as_bytes()).is_ok());
     }
 }
