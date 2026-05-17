@@ -6,6 +6,7 @@
 use crate::{Tool, ToolContext, ToolResult};
 use async_trait::async_trait;
 use std::fs;
+use std::io::Read;
 
 /// Maximum lines to show without a range specified.
 const MAX_LINES_DEFAULT: usize = 500;
@@ -138,11 +139,14 @@ impl Tool for FileReadTool {
 
 /// Check if a file appears to be binary by looking for null bytes.
 fn is_binary(path: &std::path::Path) -> bool {
-    match fs::read(path) {
-        Ok(bytes) => {
-            let check_len = bytes.len().min(BINARY_CHECK_SIZE);
-            bytes[..check_len].contains(&0)
-        }
+    let file = match fs::File::open(path) {
+        Ok(file) => file,
+        Err(_) => return false,
+    };
+
+    let mut bytes = Vec::with_capacity(BINARY_CHECK_SIZE);
+    match file.take(BINARY_CHECK_SIZE as u64).read_to_end(&mut bytes) {
+        Ok(_) => bytes.contains(&0),
         Err(_) => false,
     }
 }
@@ -218,5 +222,52 @@ mod tests {
 
         assert!(!result.is_success());
         assert!(result.content.contains("Binary"));
+    }
+
+    #[test]
+    fn test_is_binary_detects_ascii_text() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("text.txt");
+        fs::write(&file_path, "hello\nworld\n").unwrap();
+
+        assert!(!is_binary(&file_path));
+    }
+
+    #[test]
+    fn test_is_binary_detects_utf8_text() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("utf8.txt");
+        fs::write(&file_path, "hello こんにちは\n").unwrap();
+
+        assert!(!is_binary(&file_path));
+    }
+
+    #[test]
+    fn test_is_binary_detects_null_bytes() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("binary.bin");
+        fs::write(&file_path, b"abc\0def").unwrap();
+
+        assert!(is_binary(&file_path));
+    }
+
+    #[test]
+    fn test_is_binary_treats_empty_file_as_text() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("empty.txt");
+        fs::write(&file_path, []).unwrap();
+
+        assert!(!is_binary(&file_path));
+    }
+
+    #[test]
+    fn test_is_binary_only_checks_initial_window() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("late-null.txt");
+        let mut data = vec![b'a'; BINARY_CHECK_SIZE + 1];
+        data[BINARY_CHECK_SIZE] = 0;
+        fs::write(&file_path, data).unwrap();
+
+        assert!(!is_binary(&file_path));
     }
 }
