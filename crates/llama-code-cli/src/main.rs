@@ -3,9 +3,12 @@
 
 //! Llama Code CLI - The first coding agent built natively for open-source models.
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use clap_complete::generate;
+use clap_complete::shells::{Bash, Fish, PowerShell, Zsh};
 use llama_code_core::agent::Agent;
 use llama_code_core::config::Config;
+use std::io;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -43,13 +46,52 @@ struct Cli {
 enum Commands {
     /// Run initial setup (install Ollama, pull default model)
     Setup,
-    /// Show current configuration
-    Config,
+    /// Show or manage configuration
+    Config {
+        #[command(subcommand)]
+        command: Option<ConfigCommands>,
+    },
+    /// Generate shell completion scripts to stdout
+    Completions {
+        /// Target shell
+        #[arg(value_enum)]
+        shell: CompletionShell,
+    },
+}
+
+#[derive(Subcommand)]
+enum ConfigCommands {
+    /// Write a default config.toml to the standard configuration path
+    Generate {
+        /// Overwrite an existing config file
+        #[arg(long)]
+        force: bool,
+    },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CompletionShell {
+    Bash,
+    Zsh,
+    Fish,
+    PowerShell,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
+    let command = cli.command;
+
+    if let Some(Commands::Completions { shell }) = command {
+        return run_completions(shell);
+    }
+
+    if let Some(Commands::Config {
+        command: Some(ConfigCommands::Generate { force }),
+    }) = command
+    {
+        return run_config_generate(force);
+    }
 
     // Setup logging (opt-in only)
     if cli.debug {
@@ -77,15 +119,16 @@ async fn main() -> anyhow::Result<()> {
     config.logging.debug = cli.debug;
 
     // Handle subcommands
-    match cli.command {
+    match command {
         Some(Commands::Setup) => {
             return run_setup(&config).await;
         }
-        Some(Commands::Config) => {
+        Some(Commands::Config { command: None }) => {
             println!("{}", toml::to_string_pretty(&config)?);
             return Ok(());
         }
         None => {}
+        Some(Commands::Config { .. }) | Some(Commands::Completions { .. }) => unreachable!(),
     }
 
     // Get working directory
@@ -106,6 +149,41 @@ async fn main() -> anyhow::Result<()> {
 
     // Run TUI
     llama_code_tui::app::run(agent).await?;
+
+    Ok(())
+}
+
+fn run_completions(shell: CompletionShell) -> anyhow::Result<()> {
+    let mut cmd = Cli::command();
+    let bin_name = cmd.get_name().to_string();
+    let mut stdout = io::stdout();
+
+    match shell {
+        CompletionShell::Bash => generate(Bash, &mut cmd, bin_name, &mut stdout),
+        CompletionShell::Zsh => generate(Zsh, &mut cmd, bin_name, &mut stdout),
+        CompletionShell::Fish => generate(Fish, &mut cmd, bin_name, &mut stdout),
+        CompletionShell::PowerShell => generate(PowerShell, &mut cmd, bin_name, &mut stdout),
+    }
+
+    Ok(())
+}
+
+fn run_config_generate(force: bool) -> anyhow::Result<()> {
+    let config_dir = Config::config_dir()
+        .ok_or_else(|| anyhow::anyhow!("Could not determine config directory"))?;
+    std::fs::create_dir_all(&config_dir)?;
+
+    let config_path = config_dir.join("config.toml");
+    if config_path.exists() && !force {
+        anyhow::bail!(
+            "Config already exists at {}. Pass --force to overwrite.",
+            config_path.display()
+        );
+    }
+
+    let toml_str = toml::to_string_pretty(&Config::default())?;
+    std::fs::write(&config_path, toml_str)?;
+    println!("{}", config_path.display());
 
     Ok(())
 }
