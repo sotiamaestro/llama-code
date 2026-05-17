@@ -10,6 +10,7 @@ use tokio::process::Command;
 
 /// Default timeout for commands in seconds.
 const DEFAULT_TIMEOUT_SECS: u64 = 30;
+const OUTPUT_TRUNCATION_LIMIT: usize = 50_000;
 
 /// Commands that are auto-approved (safe, read-only operations).
 const ALLOWLIST: &[&str] = &[
@@ -170,13 +171,7 @@ impl Tool for BashTool {
                     output = "(no output)".to_string();
                 }
 
-                // Truncate very long output
-                if output.len() > 50_000 {
-                    let truncated_msg =
-                        format!("\n\n... [output truncated, {} total bytes]", output.len());
-                    output.truncate(50_000);
-                    output.push_str(&truncated_msg);
-                }
+                truncate_output(&mut output);
 
                 if exit_code == 0 {
                     ToolResult::success(format!("$ {command}\n{output}"))
@@ -190,6 +185,22 @@ impl Tool for BashTool {
             )),
         }
     }
+}
+
+fn truncate_output(output: &mut String) {
+    if output.len() <= OUTPUT_TRUNCATION_LIMIT {
+        return;
+    }
+
+    let total_bytes = output.len();
+    let mut truncation_boundary = OUTPUT_TRUNCATION_LIMIT;
+    while !output.is_char_boundary(truncation_boundary) {
+        truncation_boundary -= 1;
+    }
+
+    let truncated_msg = format!("\n\n... [output truncated, {total_bytes} total bytes]");
+    output.truncate(truncation_boundary);
+    output.push_str(&truncated_msg);
 }
 
 async fn execute_command(
@@ -243,6 +254,22 @@ mod tests {
         assert!(!BashTool::requires_confirmation("curl example.com", true));
         // Always dangerous: always needs confirmation
         assert!(BashTool::requires_confirmation("rm -rf /", true));
+    }
+
+    #[test]
+    fn test_truncate_output_respects_utf8_boundaries() {
+        let mut output = "a".repeat(OUTPUT_TRUNCATION_LIMIT - 1);
+        output.push_str("\u{1F980}");
+        let total_bytes = output.len();
+
+        truncate_output(&mut output);
+
+        assert!(output.is_char_boundary(OUTPUT_TRUNCATION_LIMIT - 1));
+        assert!(output.starts_with(&"a".repeat(OUTPUT_TRUNCATION_LIMIT - 1)));
+        assert!(!output.contains("\u{1F980}"));
+        assert!(output.ends_with(&format!(
+            "... [output truncated, {total_bytes} total bytes]"
+        )));
     }
 
     #[tokio::test]
