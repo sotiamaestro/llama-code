@@ -259,7 +259,7 @@ mod tests {
     #[test]
     fn test_truncate_output_respects_utf8_boundaries() {
         let mut output = "a".repeat(OUTPUT_TRUNCATION_LIMIT - 1);
-        output.push_str("\u{1F980}");
+        output.push('\u{1F980}');
         let total_bytes = output.len();
 
         truncate_output(&mut output);
