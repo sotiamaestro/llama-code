@@ -144,9 +144,9 @@ fn is_binary(path: &std::path::Path) -> bool {
         Err(_) => return false,
     };
 
-    let mut bytes = Vec::with_capacity(BINARY_CHECK_SIZE);
-    match file.take(BINARY_CHECK_SIZE as u64).read_to_end(&mut bytes) {
-        Ok(_) => bytes.contains(&0),
+    let mut bytes = [0u8; BINARY_CHECK_SIZE];
+    match file.take(BINARY_CHECK_SIZE as u64).read(&mut bytes) {
+        Ok(len) => bytes[..len].contains(&0),
         Err(_) => false,
     }
 }
