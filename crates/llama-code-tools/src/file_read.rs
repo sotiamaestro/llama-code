@@ -212,7 +212,8 @@ mod tests {
         let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("binary.bin");
         let mut f = fs::File::create(&file_path).expect("file creation should succeed");
-        f.write_all(&[0u8, 1, 2, 3, 0, 255]).expect("file write should succeed");
+        f.write_all(&[0u8, 1, 2, 3, 0, 255])
+            .expect("file write should succeed");
 
         let tool = FileReadTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());

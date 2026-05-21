@@ -134,7 +134,8 @@ mod tests {
             .await;
 
         assert!(result.is_success());
-        let content = fs::read_to_string(dir.path().join("test.rs")).expect("file read should succeed");
+        let content =
+            fs::read_to_string(dir.path().join("test.rs")).expect("file read should succeed");
         assert!(content.contains("world"));
         assert!(!content.contains("hello"));
     }

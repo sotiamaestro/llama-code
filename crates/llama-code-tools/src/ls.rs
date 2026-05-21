@@ -169,7 +169,8 @@ mod tests {
         fs::write(dir.path().join("file1.rs"), "code").expect("file write should succeed");
         fs::write(dir.path().join("file2.txt"), "text").expect("file write should succeed");
         fs::create_dir(dir.path().join("subdir")).expect("directory creation should succeed");
-        fs::write(dir.path().join("subdir/nested.rs"), "nested").expect("file write should succeed");
+        fs::write(dir.path().join("subdir/nested.rs"), "nested")
+            .expect("file write should succeed");
 
         let tool = LsTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());

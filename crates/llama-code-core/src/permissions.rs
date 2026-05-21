@@ -95,7 +95,10 @@ impl PermissionManager {
             Permission::AutoApprove => true,
             Permission::ConfirmOnce => {
                 let key = self.session_key(call);
-                let approvals = self.session_approvals.lock().expect("session_approvals lock should not be poisoned");
+                let approvals = self
+                    .session_approvals
+                    .lock()
+                    .expect("session_approvals lock should not be poisoned");
                 approvals.contains(&key)
             }
             Permission::AlwaysConfirm => false,
@@ -105,7 +108,10 @@ impl PermissionManager {
     /// Record that a tool call type was approved for this session.
     pub fn approve_for_session(&self, call: &ToolCall) {
         let key = self.session_key(call);
-        let mut approvals = self.session_approvals.lock().expect("session_approvals lock should not be poisoned");
+        let mut approvals = self
+            .session_approvals
+            .lock()
+            .expect("session_approvals lock should not be poisoned");
         approvals.insert(key);
     }
 

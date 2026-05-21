@@ -100,12 +100,15 @@ fn try_parse(json_str: &str) -> Option<ParsedToolCall> {
 fn fix_single_quotes(input: &str) -> String {
     // Simple replacement - works for most cases
     // A more robust implementation would track string context
-    static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"'([^']*)'(\s*[,:\}\]])").expect("valid regex for single quotes"));
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r"'([^']*)'(\s*[,:\}\]])").expect("valid regex for single quotes")
+    });
     RE.replace_all(input, r#""$1"$2"#).to_string()
 }
 
 fn remove_trailing_commas(input: &str) -> String {
-    static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r",\s*([}\]])").expect("valid regex for trailing commas"));
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r",\s*([}\]])").expect("valid regex for trailing commas"));
     RE.replace_all(input, "$1").to_string()
 }
 
@@ -164,21 +167,24 @@ mod tests {
     #[test]
     fn test_repair_trailing_comma() {
         let input = r#"{"name": "file_read", "parameters": {"path": "test.rs",}}"#;
-        let repaired = repair_json(input).expect("valid json input with trailing comma should be repaired");
+        let repaired =
+            repair_json(input).expect("valid json input with trailing comma should be repaired");
         assert!(serde_json::from_str::<serde_json::Value>(&repaired).is_ok());
     }
 
     #[test]
     fn test_repair_unclosed_brace() {
         let input = r#"{"name": "file_read", "parameters": {"path": "test.rs"}"#;
-        let repaired = repair_json(input).expect("valid json input with unclosed brace should be repaired");
+        let repaired =
+            repair_json(input).expect("valid json input with unclosed brace should be repaired");
         assert!(serde_json::from_str::<serde_json::Value>(&repaired).is_ok());
     }
 
     #[test]
     fn test_parse_with_repair() {
         let input = r#"{"name": "bash", "parameters": {"command": "ls -la",}}"#;
-        let call = parse_tool_call_with_repair(input).expect("valid tool call input with trailing comma should be parsed");
+        let call = parse_tool_call_with_repair(input)
+            .expect("valid tool call input with trailing comma should be parsed");
         assert_eq!(call.name, "bash");
         assert_eq!(call.parameters["command"], "ls -la");
     }
@@ -186,7 +192,8 @@ mod tests {
     #[test]
     fn test_extract_json_from_text() {
         let input = r#"Let me read that file: {"name": "file_read", "parameters": {"path": "main.rs"}} done."#;
-        let call = parse_tool_call_with_repair(input).expect("valid tool call inside text should be extracted and parsed");
+        let call = parse_tool_call_with_repair(input)
+            .expect("valid tool call inside text should be extracted and parsed");
         assert_eq!(call.name, "file_read");
     }
 

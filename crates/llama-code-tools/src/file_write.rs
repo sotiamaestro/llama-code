@@ -160,7 +160,8 @@ mod tests {
     #[tokio::test]
     async fn test_write_overwrite_shows_diff() {
         let dir = TempDir::new().expect("tempdir creation should succeed");
-        fs::write(dir.path().join("existing.txt"), "old content\n").expect("file write should succeed");
+        fs::write(dir.path().join("existing.txt"), "old content\n")
+            .expect("file write should succeed");
 
         let tool = FileWriteTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());

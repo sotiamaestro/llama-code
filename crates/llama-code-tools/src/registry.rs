@@ -114,7 +114,9 @@ mod tests {
     #[test]
     fn test_unknown_tool() {
         let registry = ToolRegistry::with_builtins();
-        let ctx = ToolContext::new(std::env::current_dir().expect("valid current working directory in test"));
+        let ctx = ToolContext::new(
+            std::env::current_dir().expect("valid current working directory in test"),
+        );
         let call = ToolCall {
             name: "nonexistent".to_string(),
             parameters: serde_json::Value::Null,
