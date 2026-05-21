@@ -212,7 +212,7 @@ mod tests {
 
         let escalated = router.escalate(ModelTier::Default);
         assert!(escalated.is_some());
-        let (model, tier) = escalated.unwrap();
+        let (model, tier) = escalated.expect("escalation should succeed for Default tier");
         assert_eq!(tier, ModelTier::Heavy);
         assert_eq!(model, "llama3.1:70b");
 

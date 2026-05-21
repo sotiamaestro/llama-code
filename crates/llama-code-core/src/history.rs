@@ -218,7 +218,7 @@ mod tests {
         history.compact(2);
         assert_eq!(history.len(), 2);
         assert!(history.compacted_summary().is_some());
-        assert!(history.compacted_summary().unwrap().contains("message 0"));
+        assert!(history.compacted_summary().expect("summary should be present after compaction").contains("message 0"));
     }
 
     #[test]

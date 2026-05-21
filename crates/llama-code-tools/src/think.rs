@@ -57,7 +57,7 @@ mod tests {
     #[tokio::test]
     async fn test_think() {
         let tool = ThinkTool;
-        let ctx = ToolContext::new(std::env::current_dir().unwrap());
+        let ctx = ToolContext::new(std::env::current_dir().expect("valid current working directory in test"));
 
         let result = tool
             .execute(

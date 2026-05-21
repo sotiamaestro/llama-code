@@ -159,9 +159,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_file() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("test.txt");
-        fs::write(&file_path, "line 1\nline 2\nline 3\n").unwrap();
+        fs::write(&file_path, "line 1\nline 2\nline 3\n").expect("file write should succeed");
 
         let tool = FileReadTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -176,9 +176,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_with_range() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("test.txt");
-        fs::write(&file_path, "a\nb\nc\nd\ne\n").unwrap();
+        fs::write(&file_path, "a\nb\nc\nd\ne\n").expect("file write should succeed");
 
         let tool = FileReadTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -196,7 +196,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_nonexistent() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = FileReadTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
         let result = tool
@@ -209,10 +209,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_binary() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("binary.bin");
-        let mut f = fs::File::create(&file_path).unwrap();
-        f.write_all(&[0u8, 1, 2, 3, 0, 255]).unwrap();
+        let mut f = fs::File::create(&file_path).expect("file creation should succeed");
+        f.write_all(&[0u8, 1, 2, 3, 0, 255]).expect("file write should succeed");
 
         let tool = FileReadTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -226,47 +226,47 @@ mod tests {
 
     #[test]
     fn test_is_binary_detects_ascii_text() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("text.txt");
-        fs::write(&file_path, "hello\nworld\n").unwrap();
+        fs::write(&file_path, "hello\nworld\n").expect("file write should succeed");
 
         assert!(!is_binary(&file_path));
     }
 
     #[test]
     fn test_is_binary_detects_utf8_text() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("utf8.txt");
-        fs::write(&file_path, "hello こんにちは\n").unwrap();
+        fs::write(&file_path, "hello こんにちは\n").expect("file write should succeed");
 
         assert!(!is_binary(&file_path));
     }
 
     #[test]
     fn test_is_binary_detects_null_bytes() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("binary.bin");
-        fs::write(&file_path, b"abc\0def").unwrap();
+        fs::write(&file_path, b"abc\0def").expect("file write should succeed");
 
         assert!(is_binary(&file_path));
     }
 
     #[test]
     fn test_is_binary_treats_empty_file_as_text() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("empty.txt");
-        fs::write(&file_path, []).unwrap();
+        fs::write(&file_path, []).expect("file write should succeed");
 
         assert!(!is_binary(&file_path));
     }
 
     #[test]
     fn test_is_binary_only_checks_initial_window() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let file_path = dir.path().join("late-null.txt");
         let mut data = vec![b'a'; BINARY_CHECK_SIZE + 1];
         data[BINARY_CHECK_SIZE] = 0;
-        fs::write(&file_path, data).unwrap();
+        fs::write(&file_path, data).expect("file write should succeed");
 
         assert!(!is_binary(&file_path));
     }

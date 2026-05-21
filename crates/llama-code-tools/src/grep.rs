@@ -167,12 +167,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_grep_finds_pattern() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         fs::write(
             dir.path().join("test.rs"),
             "fn main() {\n    // TODO: fix this\n    println!(\"hello\");\n}\n",
         )
-        .unwrap();
+        .expect("file write should succeed");
 
         let tool = GrepTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -187,8 +187,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_grep_no_matches() {
-        let dir = TempDir::new().unwrap();
-        fs::write(dir.path().join("test.rs"), "fn main() {}\n").unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
+        fs::write(dir.path().join("test.rs"), "fn main() {}\n").expect("file write should succeed");
 
         let tool = GrepTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());

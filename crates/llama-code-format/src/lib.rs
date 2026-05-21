@@ -1,6 +1,8 @@
 // Copyright 2026 Llama Code Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+#![deny(clippy::unwrap_used)]
+
 //! Llama-native prompt formatting and constrained decoding for Llama Code.
 //!
 //! This crate handles formatting prompts for Llama 3.x models with proper

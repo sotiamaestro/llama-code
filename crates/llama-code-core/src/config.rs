@@ -262,7 +262,7 @@ num_ctx = 16384
 [permissions]
 yolo = true
 "#;
-        let config: Config = toml::from_str(toml_str).unwrap();
+        let config: Config = toml::from_str(toml_str).expect("valid config TOML string");
         assert_eq!(config.model.default, "llama3.2:3b");
         assert_eq!(config.model.parameters.temperature, 0.2);
         assert_eq!(config.model.parameters.num_ctx, 16384);
@@ -276,7 +276,7 @@ yolo = true
 [model]
 default = "custom-model"
 "#;
-        let config: Config = toml::from_str(toml_str).unwrap();
+        let config: Config = toml::from_str(toml_str).expect("valid partial config TOML string");
         assert_eq!(config.model.default, "custom-model");
         assert_eq!(config.model.parameters.num_ctx, DEFAULT_NUM_CTX); // default
         assert!(!config.permissions.yolo); // default

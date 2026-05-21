@@ -1,6 +1,8 @@
 // Copyright 2026 Llama Code Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+#![deny(clippy::unwrap_used)]
+
 //! Built-in tool implementations for Llama Code.
 //!
 //! Each tool follows the `Tool` trait interface, providing a name, description,

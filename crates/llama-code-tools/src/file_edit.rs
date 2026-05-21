@@ -112,12 +112,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_single_match() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         fs::write(
             dir.path().join("test.rs"),
             "fn main() {\n    println!(\"hello\");\n}\n",
         )
-        .unwrap();
+        .expect("file write should succeed");
 
         let tool = FileEditTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -134,15 +134,15 @@ mod tests {
             .await;
 
         assert!(result.is_success());
-        let content = fs::read_to_string(dir.path().join("test.rs")).unwrap();
+        let content = fs::read_to_string(dir.path().join("test.rs")).expect("file read should succeed");
         assert!(content.contains("world"));
         assert!(!content.contains("hello"));
     }
 
     #[tokio::test]
     async fn test_edit_no_match() {
-        let dir = TempDir::new().unwrap();
-        fs::write(dir.path().join("test.rs"), "fn main() {}\n").unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
+        fs::write(dir.path().join("test.rs"), "fn main() {}\n").expect("file write should succeed");
 
         let tool = FileEditTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -164,12 +164,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_ambiguous_match() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         fs::write(
             dir.path().join("test.rs"),
             "let x = 1;\nlet y = 1;\nlet z = 1;\n",
         )
-        .unwrap();
+        .expect("file write should succeed");
 
         let tool = FileEditTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -192,7 +192,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_nonexistent_file() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = FileEditTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 

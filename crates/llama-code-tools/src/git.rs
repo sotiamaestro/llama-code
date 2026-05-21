@@ -158,7 +158,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_git_in_non_repo() {
-        let dir = tempfile::TempDir::new().unwrap();
+        let dir = tempfile::TempDir::new().expect("tempdir creation should succeed");
         let tool = GitTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 

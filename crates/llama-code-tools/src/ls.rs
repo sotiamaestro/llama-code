@@ -165,11 +165,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_ls_basic() {
-        let dir = TempDir::new().unwrap();
-        fs::write(dir.path().join("file1.rs"), "code").unwrap();
-        fs::write(dir.path().join("file2.txt"), "text").unwrap();
-        fs::create_dir(dir.path().join("subdir")).unwrap();
-        fs::write(dir.path().join("subdir/nested.rs"), "nested").unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
+        fs::write(dir.path().join("file1.rs"), "code").expect("file write should succeed");
+        fs::write(dir.path().join("file2.txt"), "text").expect("file write should succeed");
+        fs::create_dir(dir.path().join("subdir")).expect("directory creation should succeed");
+        fs::write(dir.path().join("subdir/nested.rs"), "nested").expect("file write should succeed");
 
         let tool = LsTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
@@ -183,7 +183,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ls_nonexistent() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = LsTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 

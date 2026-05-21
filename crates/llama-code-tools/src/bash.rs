@@ -274,7 +274,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute_simple_command() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = BashTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 
@@ -288,7 +288,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute_failing_command() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = BashTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 
@@ -304,7 +304,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_dangerous_command_rejected() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = BashTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 

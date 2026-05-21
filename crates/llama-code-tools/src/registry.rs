@@ -114,13 +114,13 @@ mod tests {
     #[test]
     fn test_unknown_tool() {
         let registry = ToolRegistry::with_builtins();
-        let ctx = ToolContext::new(std::env::current_dir().unwrap());
+        let ctx = ToolContext::new(std::env::current_dir().expect("valid current working directory in test"));
         let call = ToolCall {
             name: "nonexistent".to_string(),
             parameters: serde_json::Value::Null,
         };
         let result = tokio::runtime::Runtime::new()
-            .unwrap()
+            .expect("tokio runtime should be created successfully")
             .block_on(registry.execute(&call, &ctx));
         assert!(!result.is_success());
         assert!(result.content.contains("Unknown tool"));

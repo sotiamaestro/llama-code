@@ -121,7 +121,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_write_new_file() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = FileWriteTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 
@@ -135,14 +135,14 @@ mod tests {
         assert!(result.is_success());
         assert!(result.content.contains("Created"));
         assert_eq!(
-            fs::read_to_string(dir.path().join("new.txt")).unwrap(),
+            fs::read_to_string(dir.path().join("new.txt")).expect("file read should succeed"),
             "hello world\n"
         );
     }
 
     #[tokio::test]
     async fn test_write_creates_directories() {
-        let dir = TempDir::new().unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
         let tool = FileWriteTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());
 
@@ -159,8 +159,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_write_overwrite_shows_diff() {
-        let dir = TempDir::new().unwrap();
-        fs::write(dir.path().join("existing.txt"), "old content\n").unwrap();
+        let dir = TempDir::new().expect("tempdir creation should succeed");
+        fs::write(dir.path().join("existing.txt"), "old content\n").expect("file write should succeed");
 
         let tool = FileWriteTool;
         let ctx = ToolContext::new(dir.path().to_path_buf());

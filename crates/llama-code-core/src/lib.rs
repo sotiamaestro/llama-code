@@ -1,6 +1,8 @@
 // Copyright 2026 Llama Code Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+#![deny(clippy::unwrap_used)]
+
 //! Core agent loop and state machine for Llama Code.
 //!
 //! This crate contains the main agent loop, configuration, context window
