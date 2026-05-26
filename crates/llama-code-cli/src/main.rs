@@ -66,7 +66,10 @@ async fn main() -> anyhow::Result<()> {
     });
 
     // Apply CLI overrides
-    config.apply_env_overrides();
+    if let Err(e) = config.apply_env_overrides() {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    }
     if let Some(model) = cli.model {
         config.model.default = model;
     }
