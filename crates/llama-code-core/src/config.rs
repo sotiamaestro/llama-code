@@ -20,15 +20,20 @@ const DEFAULT_TEMPERATURE: f64 = 0.1;
 /// Default max iterations per turn.
 const DEFAULT_MAX_ITERATIONS: usize = 10;
 
-/// Top-level configuration.
+/// Top-level configuration for Llama Code.
+///
+/// Loaded from `config.toml` and optionally overridden by environment variables.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
+    /// Model selection, Ollama connection, and generation parameters.
     #[serde(default)]
     pub model: ModelConfig,
 
+    /// Tool permissions and agent loop limits.
     #[serde(default)]
     pub permissions: PermissionsConfig,
 
+    /// Debug logging and log file location.
     #[serde(default)]
     pub logging: LoggingConfig,
 }
@@ -36,19 +41,21 @@ pub struct Config {
 /// Model configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelConfig {
-    /// Default model for general tasks.
+    /// Default model for general tasks (Ollama tag, e.g. `llama3.1:8b-instruct-q4_K_M`).
     #[serde(default = "default_model")]
     pub default: String,
 
-    /// Heavy model for complex reasoning (optional).
+    /// Optional heavier model for complex reasoning tasks.
     pub heavy: Option<String>,
 
-    /// Light model for simple tasks (optional).
+    /// Optional lighter model for simple tasks.
     pub light: Option<String>,
 
+    /// Ollama server connection settings.
     #[serde(default)]
     pub ollama: OllamaConfig,
 
+    /// Sampling and context parameters passed to Ollama.
     #[serde(default)]
     pub parameters: ModelParameters,
 }
@@ -56,6 +63,7 @@ pub struct ModelConfig {
 /// Ollama connection settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OllamaConfig {
+    /// Base URL of the Ollama API (scheme + host + port). Default: `http://127.0.0.1:11434`.
     #[serde(default = "default_ollama_host")]
     pub host: String,
 }
@@ -63,18 +71,23 @@ pub struct OllamaConfig {
 /// Model generation parameters.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelParameters {
+    /// Sampling temperature; lower values are more deterministic. Default: `0.1` (range `0.0`–`2.0`).
     #[serde(default = "default_temperature")]
     pub temperature: f64,
 
+    /// Nucleus sampling threshold. Default: `0.95` (range `0.0`–`1.0`).
     #[serde(default = "default_top_p")]
     pub top_p: f64,
 
+    /// Context window size in tokens. Default: `32768`.
     #[serde(default = "default_num_ctx")]
     pub num_ctx: usize,
 
+    /// Maximum tokens generated per model response. Default: `4096`.
     #[serde(default = "default_num_predict")]
     pub num_predict: usize,
 
+    /// Penalty for repeating tokens; values above `1.0` discourage repetition. Default: `1.1`.
     #[serde(default = "default_repeat_penalty")]
     pub repeat_penalty: f64,
 }
@@ -82,11 +95,11 @@ pub struct ModelParameters {
 /// Permissions configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PermissionsConfig {
-    /// Skip confirmations for most operations.
+    /// When `true`, skip confirmation prompts for most tool operations ("yolo" mode). Default: `false`.
     #[serde(default)]
     pub yolo: bool,
 
-    /// Maximum iterations per agent turn.
+    /// Maximum agent tool-use iterations per user turn. Default: `10`.
     #[serde(default = "default_max_iterations")]
     pub max_iterations: usize,
 }
@@ -94,11 +107,11 @@ pub struct PermissionsConfig {
 /// Logging configuration.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LoggingConfig {
-    /// Enable debug logging (opt-in only).
+    /// Enable verbose debug logging. Default: `false`.
     #[serde(default)]
     pub debug: bool,
 
-    /// Log directory (within project's .llama-code/ directory).
+    /// Optional directory for log files (defaults to `.llama-code/` in the project when unset).
     pub log_dir: Option<PathBuf>,
 }
 
