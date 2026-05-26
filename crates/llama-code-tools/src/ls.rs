@@ -7,7 +7,7 @@ use crate::{Tool, ToolContext, ToolResult};
 use async_trait::async_trait;
 use bytesize::ByteSize;
 use ignore::WalkBuilder;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Default depth for directory listings.
 const DEFAULT_DEPTH: usize = 2;
@@ -115,6 +115,7 @@ fn build_tree(root: &Path, max_depth: usize, include_hidden: bool) -> String {
         };
 
         entries.push(TreeEntry {
+            relative: relative.to_path_buf(),
             name,
             depth,
             is_dir,
@@ -126,27 +127,74 @@ fn build_tree(root: &Path, max_depth: usize, include_hidden: bool) -> String {
 }
 
 struct TreeEntry {
+    relative: PathBuf,
     name: String,
     depth: usize,
     is_dir: bool,
     size: Option<u64>,
 }
 
+fn is_last_sibling(entries: &[TreeEntry], index: usize) -> bool {
+    let entry = &entries[index];
+    let parent = entry.relative.parent();
+    let depth = entry.depth;
+
+    !entries[index + 1..].iter().any(|next| {
+        next.depth == depth && next.relative.parent() == parent
+    })
+}
+
 fn format_tree(entries: &[TreeEntry]) -> String {
     let mut output = String::new();
+    let mut parent_is_last: Vec<bool> = Vec::new();
 
-    for entry in entries {
-        let indent = "  ".repeat(entry.depth.saturating_sub(1));
-        let prefix = if entry.depth > 0 { "├── " } else { "" };
+    for (index, entry) in entries.iter().enumerate() {
+        parent_is_last.truncate(entry.depth.saturating_sub(1));
+
+        let continuation: String = parent_is_last
+            .iter()
+            .map(|&is_last| {
+                if is_last {
+                    "    "
+                } else {
+                    "│   "
+                }
+            })
+            .collect();
+
+        let branch = if entry.depth == 0 {
+            String::new()
+        } else if is_last_sibling(entries, index) {
+            "└── ".to_string()
+        } else {
+            "├── ".to_string()
+        };
 
         if entry.is_dir {
-            output.push_str(&format!("{indent}{prefix}📁 {}/\n", entry.name));
+            output.push_str(&format!(
+                "{continuation}{branch}📁 {}/\n",
+                entry.name
+            ));
         } else {
             let size_str = entry
                 .size
                 .map(|s| format!(" ({})", ByteSize(s)))
                 .unwrap_or_default();
-            output.push_str(&format!("{indent}{prefix}{}{size_str}\n", entry.name));
+            output.push_str(&format!(
+                "{continuation}{branch}{}{size_str}\n",
+                entry.name
+            ));
+        }
+
+        if entry.depth > 0 {
+            let is_last = is_last_sibling(entries, index);
+            if parent_is_last.len() < entry.depth {
+                parent_is_last.push(is_last);
+            } else {
+                parent_is_last[entry.depth - 1] = is_last;
+            }
+        } else {
+            parent_is_last.clear();
         }
     }
 
@@ -180,6 +228,46 @@ mod tests {
         assert!(result.is_success());
         assert!(result.content.contains("file1.rs"));
         assert!(result.content.contains("subdir"));
+    }
+
+    #[test]
+    fn format_tree_uses_standard_branch_characters() {
+        let entries = vec![
+            TreeEntry {
+                relative: PathBuf::from("alpha"),
+                name: "alpha".into(),
+                depth: 1,
+                is_dir: true,
+                size: None,
+            },
+            TreeEntry {
+                relative: PathBuf::from("alpha/one.txt"),
+                name: "one.txt".into(),
+                depth: 2,
+                is_dir: false,
+                size: Some(1),
+            },
+            TreeEntry {
+                relative: PathBuf::from("alpha/two.txt"),
+                name: "two.txt".into(),
+                depth: 2,
+                is_dir: false,
+                size: Some(1),
+            },
+            TreeEntry {
+                relative: PathBuf::from("beta"),
+                name: "beta".into(),
+                depth: 1,
+                is_dir: true,
+                size: None,
+            },
+        ];
+
+        let tree = format_tree(&entries);
+        assert!(tree.contains("├── 📁 alpha/"));
+        assert!(tree.contains("│   ├── one.txt"));
+        assert!(tree.contains("│   └── two.txt"));
+        assert!(tree.contains("└── 📁 beta/"));
     }
 
     #[tokio::test]
